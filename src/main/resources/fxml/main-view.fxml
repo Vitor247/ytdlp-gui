@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.ytdlpgui.ui.MainController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16"/>
+    </padding>
+
+    <HBox spacing="8">
+        <TextField fx:id="urlField" promptText="Cole a URL do vídeo aqui" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="fetchButton" text="Buscar Info" onAction="#onFetchInfo"/>
+    </HBox>
+
+    <Label fx:id="titleLabel" text="" wrapText="true"/>
+
+    <HBox spacing="8" alignment="CENTER_LEFT">
+        <Label text="Qualidade:"/>
+        <ComboBox fx:id="qualityCombo" prefWidth="220"/>
+    </HBox>
+
+    <HBox spacing="8">
+        <TextField fx:id="outputFolderField" promptText="Pasta de destino" HBox.hgrow="ALWAYS" editable="false"/>
+        <Button fx:id="browseButton" text="Procurar..." onAction="#onBrowseFolder"/>
+    </HBox>
+
+    <HBox spacing="8">
+        <Button fx:id="downloadButton" text="Baixar" onAction="#onDownload"/>
+        <Button fx:id="cancelButton" text="Cancelar" onAction="#onCancel" disable="true"/>
+    </HBox>
+
+    <ProgressBar fx:id="progressBar" prefWidth="Infinity" progress="0"/>
+    <Label fx:id="statusLabel" text="Pronto." wrapText="true"/>
+</VBox>
