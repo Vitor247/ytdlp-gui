@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ytdlpgui</groupId>
+    <artifactId>ytdlp-gui</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.version>21.0.4</javafx.version>
+        <jackson.version>2.17.2</jackson.version>
+        <main.class>com.ytdlpgui.App</main.class>
+        <launcher.class>com.ytdlpgui.Launcher</launcher.class>
+        <app.name>YtDlpGui</app.name>
+    </properties>
+
+    <dependencies>
+        <!-- classifier pinned to win: this app targets Windows only, and the shade plugin
+             (unlike javafx-maven-plugin) does not auto-resolve the platform classifier -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${app.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- Produces a runnable fat jar (classpath-based, no module-info) used as jpackage's input -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${launcher.class}</mainClass>
+                                </transformer>
+                            </transformers>
+                            <finalName>${app.name}-fat</finalName>
+                            <!-- Dedicated staging dir, never target/ itself: jpackage's "input" setting below
+                                 copies its ENTIRE contents into the app image, and must never contain jpackage's
+                                 own "destination" output, or it nests recursively on every rebuild. -->
+                            <outputDirectory>${project.build.directory}/jpackage-input</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.6.5</version>
+                <configuration>
+                    <name>${app.name}</name>
+                    <appVersion>1.0.0</appVersion>
+                    <vendor>ytdlp-gui</vendor>
+                    <input>${project.build.directory}/jpackage-input</input>
+                    <destination>${project.build.directory}/dist</destination>
+                    <mainJar>${app.name}-fat.jar</mainJar>
+                    <mainClass>${launcher.class}</mainClass>
+                    <type>APP_IMAGE</type>
+                    <javaOptions>
+                        <option>-Dfile.encoding=UTF-8</option>
+                    </javaOptions>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jpackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- mvn package -P installer  (requires WiX Toolset v3.x installed) -->
+        <profile>
+            <id>installer</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <type>MSI</type>
+                            <winMenu>true</winMenu>
+                            <winShortcut>true</winShortcut>
+                            <winDirChooser>true</winDirChooser>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
